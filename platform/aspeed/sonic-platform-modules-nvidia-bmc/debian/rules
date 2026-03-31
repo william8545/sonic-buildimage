@@ -1,0 +1,28 @@
+#!/usr/bin/make -f
+
+PACKAGE_PRE_NAME := sonic-platform-aspeed-nvidia
+MODULE_DIRS := ast2700
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_auto_build:
+	python3 setup.py bdist_wheel -d $(CURDIR)
+
+override_dh_auto_install:
+	set -e
+	(for mod in $(MODULE_DIRS); do \
+		pkg_name=$(PACKAGE_PRE_NAME)-$${mod}-bmc; \
+		device_name=arm64-aspeed_nvidia_$${mod}_bmc-r0; \
+		dh_installdirs -p$${pkg_name} usr/share/sonic/device/$${device_name}/; \
+		dh_install -p$${pkg_name} sonic_platform-1.0-py3-none-any.whl usr/share/sonic/device/$${device_name}/; \
+		dh_installdirs -p$${pkg_name} etc/obmc-console/; \
+		dh_install -p$${pkg_name} $${mod}/obmc-console/server.tty.conf etc/obmc-console/; \
+	done)
+
+override_dh_auto_test:
+
+override_dh_clean:
+	dh_clean
+	rm -f *.whl
+	rm -rf build dist *.egg-info
