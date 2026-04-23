@@ -16,8 +16,6 @@ override_dh_auto_install:
 		device_name=arm64-aspeed_nvidia_$${mod}_bmc-r0; \
 		dh_installdirs -p$${pkg_name} usr/share/sonic/device/$${device_name}/; \
 		dh_install -p$${pkg_name} sonic_platform-1.0-py3-none-any.whl usr/share/sonic/device/$${device_name}/; \
-		dh_installdirs -p$${pkg_name} etc/obmc-console/; \
-		dh_install -p$${pkg_name} $${mod}/obmc-console/server.tty.conf etc/obmc-console/; \
 	done)
 
 override_dh_auto_test:
