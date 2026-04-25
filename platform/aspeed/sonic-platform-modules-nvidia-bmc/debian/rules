@@ -1,7 +1,8 @@
 #!/usr/bin/make -f
 
 PACKAGE_PRE_NAME := sonic-platform-aspeed-nvidia
-MODULE_DIRS := ast2700
+PACKAGE_NAME := $(PACKAGE_PRE_NAME)-ast2700-bmc
+DEVICE_NAME := arm64-aspeed_nvidia_ast2700_bmc-r0
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild
@@ -11,12 +12,8 @@ override_dh_auto_build:
 
 override_dh_auto_install:
 	set -e
-	(for mod in $(MODULE_DIRS); do \
-		pkg_name=$(PACKAGE_PRE_NAME)-$${mod}-bmc; \
-		device_name=arm64-aspeed_nvidia_$${mod}_bmc-r0; \
-		dh_installdirs -p$${pkg_name} usr/share/sonic/device/$${device_name}/; \
-		dh_install -p$${pkg_name} sonic_platform-1.0-py3-none-any.whl usr/share/sonic/device/$${device_name}/; \
-	done)
+	dh_installdirs -p$(PACKAGE_NAME) usr/share/sonic/device/$(DEVICE_NAME)/
+	dh_install -p$(PACKAGE_NAME) sonic_platform-1.0-py3-none-any.whl usr/share/sonic/device/$(DEVICE_NAME)/
 
 override_dh_auto_test:
 

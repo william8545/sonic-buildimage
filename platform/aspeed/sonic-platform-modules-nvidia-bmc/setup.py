@@ -27,9 +27,7 @@ setup(
     author_email="willtsai@nvidia.com",
     url="https://github.com/sonic-net/sonic-buildimage",
     packages=["sonic_platform"],
-    package_dir={
-        "sonic_platform": "ast2700/sonic_platform",
-    },
+    package_dir={"sonic_platform": "sonic_platform"},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Plugins",
