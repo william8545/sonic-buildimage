@@ -1010,9 +1010,8 @@ class Chassis(ChassisBase):
             self._component_list.append(DeviceDataManager.get_bios_component())
             self._component_list.extend(DeviceDataManager.get_cpld_component_list())
 
-        # Initialize BMC and its components
-        if DeviceDataManager.is_platform_with_bmc():
-            self.initialize_bmc()
+        # Initialize BMC and its components (initialize_bmc() self-gates)
+        self.initialize_bmc()
 
     def get_num_components(self):
         """
@@ -1313,6 +1312,10 @@ class Chassis(ChassisBase):
 
     def initialize_bmc(self):
         if self._bmc_initialized:
+            return
+        # Gate here so every caller (e.g. get_bmc) skips BMC on non-BMC platforms.
+        if not DeviceDataManager.is_platform_with_bmc():
+            self._bmc_initialized = True
             return
         from .bmc import BMC
         self._bmc = BMC.get_instance()

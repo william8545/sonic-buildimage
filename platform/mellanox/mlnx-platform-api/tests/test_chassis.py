@@ -407,20 +407,23 @@ class TestChassis:
 
     @mock.patch('sonic_platform.chassis.utils.is_host', mock.MagicMock(return_value=True))
     def test_initialize_components_bmc(self):
+        # initialize_components() always delegates to initialize_bmc();
+        # the is_platform_with_bmc() gate now lives inside initialize_bmc().
+        for has_bmc in (True, False):
+            chassis = Chassis()
+            chassis._component_list = []
+            with mock.patch.object(DeviceDataManager, 'is_platform_with_bmc', return_value=has_bmc), \
+                 mock.patch.object(DeviceDataManager, 'get_bios_component', return_value=MagicMock()), \
+                 mock.patch.object(DeviceDataManager, 'get_cpld_component_list', return_value=[]), \
+                 mock.patch('sonic_platform.chassis.Chassis.initialize_bmc') as mock_init_bmc:
+                chassis.initialize_components()
+                mock_init_bmc.assert_called_once()
+
+        # On non-BMC platforms initialize_bmc() returns early, leaving _bmc as None.
         chassis = Chassis()
-        chassis._component_list = []
-
-        with mock.patch.object(DeviceDataManager, 'is_platform_with_bmc', return_value=True), \
-             mock.patch.object(DeviceDataManager, 'get_bios_component', return_value=MagicMock()), \
-             mock.patch.object(DeviceDataManager, 'get_cpld_component_list', return_value=[]), \
-             mock.patch('sonic_platform.chassis.Chassis.initialize_bmc') as mock_init_bmc:
-            chassis.initialize_components()
-            mock_init_bmc.assert_called_once()
-
-        chassis._component_list = []
-        with mock.patch.object(DeviceDataManager, 'is_platform_with_bmc', return_value=False), \
-             mock.patch.object(DeviceDataManager, 'get_bios_component', return_value=MagicMock()), \
-             mock.patch.object(DeviceDataManager, 'get_cpld_component_list', return_value=[]), \
-             mock.patch('sonic_platform.chassis.Chassis.initialize_bmc') as mock_init_bmc:
-            chassis.initialize_components()
-            mock_init_bmc.assert_not_called()
+        chassis._bmc = None
+        chassis._bmc_initialized = False
+        with mock.patch.object(DeviceDataManager, 'is_platform_with_bmc', return_value=False):
+            chassis.initialize_bmc()
+            assert chassis._bmc is None
+            assert chassis._bmc_initialized is True
